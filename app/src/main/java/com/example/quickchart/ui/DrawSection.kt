@@ -67,12 +67,10 @@ package com.example.quickchart.ui
 import android.view.MotionEvent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -81,10 +79,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.dp
-import kotlin.math.abs
+import com.google.mlkit.vision.digitalink.Ink
 
 
 sealed class DrawEvent {
@@ -102,6 +99,7 @@ private sealed class DrawPath {
 @Composable
 fun DrawSection(
     modifier: Modifier = Modifier,
+    viewModel: DrawSectionViewModel
 //    reset: Boolean = false,
 //    onDrawEvent: (DrawEvent) -> Unit,
 ) {
@@ -112,6 +110,8 @@ fun DrawSection(
     var drawEvent by remember {
         mutableStateOf<DrawEvent?>(null)
     }
+    var inkBuilder = Ink.builder()
+    lateinit var strokeBuilder: Ink.Stroke.Builder
 
 //    if (reset) {
 //        drawPath = null
@@ -129,6 +129,9 @@ fun DrawSection(
                         drawPath = DrawPath.MoveTo(event.x, event.y)
                         //onDrawEvent.invoke(DrawEvent.Down(event.x, event.y))
                         DrawEvent.Down(event.x, event.y)
+
+                        strokeBuilder = Ink.Stroke.builder()
+                        strokeBuilder.addPoint(Ink.Point.create(event.x, event.y))
                     }
 
                     MotionEvent.ACTION_MOVE -> {
@@ -148,11 +151,16 @@ fun DrawSection(
                         drawPath = DrawPath.CurveTo(prevX, prevY, event.x, event.y)
                         //onDrawEvent.invoke(DrawEvent.Move(event.x, event.y))
                         DrawEvent.Move(event.x, event.y)
+
+                        strokeBuilder!!.addPoint(Ink.Point.create(event.x, event.y))
                     }
 
                     MotionEvent.ACTION_UP -> {
 //                        onDrawEvent.invoke(DrawEvent.Up)
                         DrawEvent.Up
+
+                        strokeBuilder.addPoint(Ink.Point.create(event.x, event. y))
+                        inkBuilder.addStroke(strokeBuilder.build())
                     }
 
                     else -> { /* do nothing */
@@ -184,6 +192,14 @@ fun DrawSection(
             color = Color.Blue,
             style = Stroke(width = 5f, cap = StrokeCap.Round, join = StrokeJoin.Round)
         )
+    }
+
+    Button( onClick = {
+        println("Button was clicked")
+        println(inkBuilder.build())
+        viewModel.recognize_ink(inkBuilder.build())
+    }) {
+        Text("CLICK ME")
     }
 }
 

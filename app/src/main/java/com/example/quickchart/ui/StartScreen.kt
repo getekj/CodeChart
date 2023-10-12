@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.quickchart.ui.theme.QuickChartTheme
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -34,6 +35,8 @@ import androidx.navigation.navArgument
 fun QuickChartApp() {
 
     val navController = rememberNavController()
+    val viewModel: DrawSectionViewModel = viewModel()
+//    viewModel.download_model()
 
     NavHost(navController = navController, startDestination = "startscreen") {
         composable("startscreen") {
@@ -47,7 +50,7 @@ fun QuickChartApp() {
             val patient_id = remember {
                 backStackEntry.arguments?.getString("patient_id") ?: ""
             }
-            CodeChartScreen(patient = patient_id, navController = navController)
+            CodeChartScreen(patient = patient_id, navController = navController, viewModel = viewModel)
         }
     }
 

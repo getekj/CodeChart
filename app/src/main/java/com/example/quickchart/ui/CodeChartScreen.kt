@@ -19,13 +19,13 @@ import com.example.quickchart.R
 //import com.example.quickchart.StrokeManager.recognize
 
 @Composable
-fun CodeChartScreen(patient: String, navController: NavController ) {
+fun CodeChartScreen(patient: String, navController: NavController, viewModel: DrawSectionViewModel ) {
 
     Box(
         modifier = Modifier.background(Color.White)
     ) {
         Text(text = "this is code chart screen patient id: $patient")
-        DrawSection()
+        DrawSection(viewModel = viewModel)
     }
 }
 
