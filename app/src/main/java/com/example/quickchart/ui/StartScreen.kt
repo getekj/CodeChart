@@ -36,7 +36,8 @@ fun QuickChartApp() {
 
     val navController = rememberNavController()
     val viewModel: DrawSectionViewModel = viewModel()
-//    viewModel.download_model()
+
+    viewModel.digitalInkModel.download_model()
 
     NavHost(navController = navController, startDestination = "startscreen") {
         composable("startscreen") {
@@ -114,7 +115,8 @@ fun PatientBar(navController: NavController, modifier: Modifier = Modifier) {
 
         )
         Button(
-            onClick = { navController.navigate("chartscreen/${patientID.value.text}") },
+            onClick = {
+                navController.navigate("chartscreen/${patientID.value.text}") },
             modifier = Modifier.padding(4.dp)
         ) {
             Text(

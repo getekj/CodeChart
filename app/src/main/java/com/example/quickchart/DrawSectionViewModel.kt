@@ -2,7 +2,17 @@ package com.example.quickchart.ui
 
 import android.content.ContentValues.TAG
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Path
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.quickchart.ModelManager
+import com.google.mlkit.common.MlKitException
+import com.google.mlkit.common.model.DownloadConditions
+import com.google.mlkit.common.model.RemoteModelManager
 import com.google.mlkit.vision.digitalink.DigitalInkRecognition
 import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModel
 import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModelIdentifier
@@ -10,44 +20,36 @@ import com.google.mlkit.vision.digitalink.DigitalInkRecognizer
 import com.google.mlkit.vision.digitalink.DigitalInkRecognizerOptions
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.RecognitionResult
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 
 class DrawSectionViewModel : ViewModel() {
 
-//    // Specify the recognition model for a language
-//    var modelIdentifier: DigitalInkRecognitionModelIdentifier
-//
-//    fun download_model() {
-//        try {
-//            modelIdentifier = DigitalInkRecognitionModelIdentifier.fromLanguageTag("en-US")!!
-//        } catch (e: MlKitException) {
-//            // language tag failed to parse, handle error.
-//        }
-//        if (modelIdentifier == null) {
-//            // no model was found, handle error.
-//        }
-//    }
+    var reset = mutableStateOf(false)
 
-    var recognitionModel: DigitalInkRecognitionModel =
-        DigitalInkRecognitionModel.builder(DigitalInkRecognitionModelIdentifier.fromLanguageTag("en-US")!!).build()
+    val digitalInkModel = ModelManager()
 
 
-    // Get a recognizer for the language
-    var recognizer: DigitalInkRecognizer =
-        DigitalInkRecognition.getClient(
-            DigitalInkRecognizerOptions.builder(recognitionModel).build())
+    fun download_di_model() {
+
+        digitalInkModel.download_model()
+
+    }
+
 
     fun recognize_ink(ink: Ink) {
 
-        recognizer.recognize(ink)
-            .addOnSuccessListener { result: RecognitionResult ->
-                // `result` contains the recognizer's answers as a RecognitionResult.
-                // Logs the text from the top candidate.
-                Log.i(TAG, result.candidates[0].text)
-            }
-            .addOnFailureListener { e: Exception ->
-                Log.e(TAG, "Error during recognition: $e")
-            }
+        digitalInkModel.recognize_ink(ink)
+
     }
 
+    fun clear_ink() {
+        reset.value = true
+    }
+
+    fun reset_ink() {
+        reset.value = false
+    }
 }
