@@ -9,10 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,14 +31,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.quickchart.model.InterventionsViewModel
 
 @Composable
-fun QuickChartApp() {
+fun QuickChartApp(
+    interventionViewModel: InterventionsViewModel = viewModel()
+) {
 
     val navController = rememberNavController()
-    val viewModel: DrawSectionViewModel = viewModel()
+    val drawViewModel: DrawSectionViewModel = viewModel()
+//    val interventionViewModel: InterventionsViewModel = viewModel()
 
-    viewModel.digitalInkModel.download_model()
+    drawViewModel.digitalInkModel.download_model()
+
+    val uiState by interventionViewModel.uiState.collectAsState()
+
 
     NavHost(navController = navController, startDestination = "startscreen") {
         composable("startscreen") {
@@ -51,7 +59,19 @@ fun QuickChartApp() {
             val patient_id = remember {
                 backStackEntry.arguments?.getString("patient_id") ?: ""
             }
-            CodeChartScreen(patient = patient_id, navController = navController, viewModel = viewModel)
+//            CodeChartScreen(patient = patient_id, navController = navController,
+//                drawViewModel = drawViewModel, interventionViewModel = interventionViewModel)
+            CodeChartScreen(
+                patient = patient_id,
+                navController = navController,
+                drawViewModel = drawViewModel,
+                //interventionViewModel = interventionViewModel,
+                addIntervention = { time: String, description: String ->
+                    interventionViewModel.add_intervention(time, description)
+                },
+                interventions = uiState.interventionsList,
+                interventionState = uiState
+            )
         }
     }
 

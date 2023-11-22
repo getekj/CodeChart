@@ -1,7 +1,12 @@
 package com.example.quickchart
 
 import android.content.ContentValues.TAG
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import com.example.quickchart.model.Intervention
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.common.model.RemoteModelManager
@@ -12,6 +17,10 @@ import com.google.mlkit.vision.digitalink.DigitalInkRecognizer
 import com.google.mlkit.vision.digitalink.DigitalInkRecognizerOptions
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.RecognitionResult
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 class ModelManager {
@@ -24,6 +33,17 @@ class ModelManager {
     var recognizer: DigitalInkRecognizer? = null
 
     val remoteModelManager = RemoteModelManager.getInstance()
+
+    private val recognitionText = MutableStateFlow("")
+    val recognitionTextFlow = recognitionText.asStateFlow()
+
+    fun updateRecognitionText(newRecognitionText: String) {
+        recognitionText.value = newRecognitionText
+    }
+//
+//    val time_format = "yyyy-MM-dd  HH:mm:ss"
+//    @RequiresApi(Build.VERSION_CODES.O)
+//    val formatter = DateTimeFormatter.ofPattern(time_format)
 
 
     fun download_model() {
@@ -64,6 +84,7 @@ class ModelManager {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun recognize_ink(ink: Ink) {
 
         // need to download new data prior to any recognition
@@ -80,10 +101,27 @@ class ModelManager {
                 // `result` contains the recognizer's answers as a RecognitionResult.
                 // Logs the text from the top candidate.
                 Log.i(TAG, result.candidates[0].text)
+//                add_recognized_text(result.candidates[0].text)
+                //recognitionText = result.candidates[0].text
+                updateRecognitionText(result.candidates[0].text)
+                println("Inside recognizer, recognition text is now:" + recognitionText.value)
             }
             .addOnFailureListener { e: Exception ->
                 Log.e(TAG, "Error during recognition: $e")
             }
 
     }
+
+//    @RequiresApi(Build.VERSION_CODES.O)
+//    fun add_recognized_text(recognized_text: String) {
+//        recognitionText = recognized_text
+//        val currentDateTime = LocalDateTime.now()
+//        val formattedDateTime = currentDateTime.format(formatter)
+//
+//        println("Inside add recognized text, the date is " + formattedDateTime + "the text is: " + recognized_text)
+//        val newIntervention = Intervention(formattedDateTime, recognized_text)
+//
+//
+//    }
+
 }

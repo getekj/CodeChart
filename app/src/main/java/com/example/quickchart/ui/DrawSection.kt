@@ -1,7 +1,9 @@
 package com.example.quickchart.ui
 
 
+import android.os.Build
 import android.view.MotionEvent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -22,9 +24,9 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.dp
+import com.example.quickchart.model.InterventionsViewModel
 import com.google.mlkit.vision.digitalink.Ink
 import kotlinx.coroutines.delay
-import java.lang.Thread.sleep
 
 
 sealed class DrawEvent {
@@ -38,16 +40,20 @@ private sealed class DrawPath {
     data class CurveTo(val prevX: Float, val prevY: Float, val x: Float, val y: Float): DrawPath()
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DrawSection(
     modifier: Modifier = Modifier,
-    viewModel: DrawSectionViewModel,
-//    onDrawEvent: (DrawEvent) -> Unit,
+    drawViewModel: DrawSectionViewModel,
+//    interventionViewModel: InterventionsViewModel
+    addIntervention: (String, String) -> Unit
 ) {
 
+    var time: String = "2023-06-17 09:44:09"
+
     val path = remember { Path() }
-    var reset = viewModel.reset
+    var reset = drawViewModel.reset
 
     var drawPath by remember { mutableStateOf<DrawPath?>(null) }
     var drawEvent by remember {
@@ -59,7 +65,18 @@ fun DrawSection(
     if (reset.value == true) {
         drawPath = null
         path.reset()
-        viewModel.reset_ink()
+        drawViewModel.reset_ink()
+    }
+
+    var recognitionText by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        drawViewModel.digitalInkModel.recognitionTextFlow.collect {newRecText ->
+            recognitionText = newRecText
+            println("rec text is:" + recognitionText)
+            //interventionViewModel.add_intervention(time, recognitionText)
+            addIntervention(time, recognitionText)
+        }
     }
 
     Column(
@@ -74,7 +91,6 @@ fun DrawSection(
                     when (event.action) {
                         MotionEvent.ACTION_DOWN -> {
                             drawPath = DrawPath.MoveTo(event.x, event.y)
-                            //onDrawEvent.invoke(DrawEvent.Down(event.x, event.y))
                             DrawEvent.Down(event.x, event.y)
 
                             strokeBuilder = Ink.Stroke.builder()
@@ -96,14 +112,12 @@ fun DrawSection(
                                 else -> 0f
                             }
                             drawPath = DrawPath.CurveTo(prevX, prevY, event.x, event.y)
-                            //onDrawEvent.invoke(DrawEvent.Move(event.x, event.y))
                             DrawEvent.Move(event.x, event.y)
 
                             strokeBuilder!!.addPoint(Ink.Point.create(event.x, event.y))
                         }
 
                         MotionEvent.ACTION_UP -> {
-//                        onDrawEvent.invoke(DrawEvent.Up)
                             DrawEvent.Up
 
                             strokeBuilder.addPoint(Ink.Point.create(event.x, event.y))
@@ -147,17 +161,21 @@ fun DrawSection(
             Button(onClick = {
                 println("Button was clicked")
                 println(inkBuilder.build())
-                viewModel.digitalInkModel.recognize_ink(inkBuilder.build())
+                drawViewModel.digitalInkModel.recognize_ink(inkBuilder.build())
+
+
             }) {
                 Text("Save")
             }
             Button( onClick = {
                 println("Clear button was clicked")
-                viewModel.clear_ink()
+                drawViewModel.clear_ink()
             }) {
                 Text("Clear")
             }
         }
+
+
     }
 }
 

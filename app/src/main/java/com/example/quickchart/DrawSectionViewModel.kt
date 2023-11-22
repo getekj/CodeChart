@@ -2,6 +2,7 @@ package com.example.quickchart.ui
 
 import android.content.ContentValues.TAG
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +24,7 @@ import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.RecognitionResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.sql.DataSource
 
@@ -32,6 +34,8 @@ class DrawSectionViewModel : ViewModel() {
     var reset = mutableStateOf(false)
 
     val digitalInkModel = ModelManager()
+
+//    var recognitionText: String = ""
 
 
     fun download_di_model() {
@@ -53,6 +57,7 @@ class DrawSectionViewModel : ViewModel() {
     fun reset_ink() {
         reset.value = false
     }
+
 
 
 }
