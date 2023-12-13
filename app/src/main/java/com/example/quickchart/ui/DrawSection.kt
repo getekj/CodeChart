@@ -24,9 +24,12 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.dp
+import com.example.quickchart.model.Intervention
 import com.example.quickchart.model.InterventionsViewModel
 import com.google.mlkit.vision.digitalink.Ink
 import kotlinx.coroutines.delay
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 sealed class DrawEvent {
@@ -47,10 +50,13 @@ fun DrawSection(
     modifier: Modifier = Modifier,
     drawViewModel: DrawSectionViewModel,
 //    interventionViewModel: InterventionsViewModel
-    addIntervention: (String, String) -> Unit
+    addIntervention: (String, String) -> Unit,
+    interventions: List<Intervention>
 ) {
 
-    var time: String = "2023-06-17 09:44:09"
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
+    //var time: String = "2023-06-17 09:44:09"
 
     val path = remember { Path() }
     var reset = drawViewModel.reset
@@ -74,108 +80,115 @@ fun DrawSection(
         drawViewModel.digitalInkModel.recognitionTextFlow.collect {newRecText ->
             recognitionText = newRecText
             println("rec text is:" + recognitionText)
+            val current = LocalDateTime.now().format(formatter)
             //interventionViewModel.add_intervention(time, recognitionText)
-            addIntervention(time, recognitionText)
+            if (recognitionText != "") {
+                addIntervention(current, recognitionText)
+            }
         }
     }
 
-    Column(
-        modifier = modifier.padding(8.dp)
+    Row(
+        modifier = Modifier
     ) {
-        Canvas(
-            modifier = modifier
-                .size(600.dp, 900.dp)
-                .offset(x = 10.dp, y = 50.dp)
-                .background(Color.LightGray)
-                .pointerInteropFilter { event ->
-                    when (event.action) {
-                        MotionEvent.ACTION_DOWN -> {
-                            drawPath = DrawPath.MoveTo(event.x, event.y)
-                            DrawEvent.Down(event.x, event.y)
+        Column(
+            modifier = modifier.padding(8.dp)
+        ) {
+            Canvas(
+                modifier = modifier
+                    .size(600.dp, 900.dp)
+                    .offset(x = 10.dp, y = 50.dp)
+                    .background(Color.LightGray)
+                    .pointerInteropFilter { event ->
+                        when (event.action) {
+                            MotionEvent.ACTION_DOWN -> {
+                                drawPath = DrawPath.MoveTo(event.x, event.y)
+                                DrawEvent.Down(event.x, event.y)
 
-                            strokeBuilder = Ink.Stroke.builder()
-                            strokeBuilder.addPoint(Ink.Point.create(event.x, event.y))
-                        }
-
-                        MotionEvent.ACTION_MOVE -> {
-                            val prevX = when (drawPath) {
-                                is DrawPath.MoveTo -> (drawPath as DrawPath.MoveTo).x
-                                is DrawPath.CurveTo -> (drawPath as DrawPath.CurveTo).x
-
-                                else -> 0f
+                                strokeBuilder = Ink.Stroke.builder()
+                                strokeBuilder.addPoint(Ink.Point.create(event.x, event.y))
                             }
 
-                            val prevY = when (drawPath) {
-                                is DrawPath.MoveTo -> (drawPath as DrawPath.MoveTo).y
-                                is DrawPath.CurveTo -> (drawPath as DrawPath.CurveTo).y
+                            MotionEvent.ACTION_MOVE -> {
+                                val prevX = when (drawPath) {
+                                    is DrawPath.MoveTo -> (drawPath as DrawPath.MoveTo).x
+                                    is DrawPath.CurveTo -> (drawPath as DrawPath.CurveTo).x
 
-                                else -> 0f
+                                    else -> 0f
+                                }
+
+                                val prevY = when (drawPath) {
+                                    is DrawPath.MoveTo -> (drawPath as DrawPath.MoveTo).y
+                                    is DrawPath.CurveTo -> (drawPath as DrawPath.CurveTo).y
+
+                                    else -> 0f
+                                }
+                                drawPath = DrawPath.CurveTo(prevX, prevY, event.x, event.y)
+                                DrawEvent.Move(event.x, event.y)
+
+                                strokeBuilder!!.addPoint(Ink.Point.create(event.x, event.y))
                             }
-                            drawPath = DrawPath.CurveTo(prevX, prevY, event.x, event.y)
-                            DrawEvent.Move(event.x, event.y)
 
-                            strokeBuilder!!.addPoint(Ink.Point.create(event.x, event.y))
+                            MotionEvent.ACTION_UP -> {
+                                DrawEvent.Up
+
+                                strokeBuilder.addPoint(Ink.Point.create(event.x, event.y))
+                                inkBuilder.addStroke(strokeBuilder.build())
+                            }
+
+                            else -> { /* do nothing */
+                            }
                         }
 
-                        MotionEvent.ACTION_UP -> {
-                            DrawEvent.Up
+                        return@pointerInteropFilter true
+                    }
+            ) {
+                if (drawPath == null)
+                    return@Canvas
 
-                            strokeBuilder.addPoint(Ink.Point.create(event.x, event.y))
-                            inkBuilder.addStroke(strokeBuilder.build())
-                        }
-
-                        else -> { /* do nothing */
-                        }
+                when (drawPath) {
+                    is DrawPath.MoveTo -> {
+                        val (x, y) = drawPath as DrawPath.MoveTo
+                        path.moveTo(x, y)
                     }
 
-                    return@pointerInteropFilter true
-                }
-        ) {
-            if (drawPath == null)
-                return@Canvas
+                    is DrawPath.CurveTo -> {
+                        val (prevX, prevY, x, y) = drawPath as DrawPath.CurveTo
+                        path.quadraticBezierTo(prevX, prevY, (x + prevX) / 2, (y + prevY) / 2)
+                    }
 
-            when (drawPath) {
-                is DrawPath.MoveTo -> {
-                    val (x, y) = drawPath as DrawPath.MoveTo
-                    path.moveTo(x, y)
+                    else -> {
+                        return@Canvas
+                    }
                 }
 
-                is DrawPath.CurveTo -> {
-                    val (prevX, prevY, x, y) = drawPath as DrawPath.CurveTo
-                    path.quadraticBezierTo(prevX, prevY, (x + prevX) / 2, (y + prevY) / 2)
-                }
+                drawPath(
+                    path = path,
+                    color = Color.Blue,
+                    style = Stroke(width = 5f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                )
+            }
 
-                else -> {
-                    return@Canvas
+            Row(modifier = modifier.padding(8.dp)) {
+                Button(onClick = {
+                    println("Button was clicked")
+                    println(inkBuilder.build())
+                    drawViewModel.digitalInkModel.recognize_ink(inkBuilder.build())
+                    drawViewModel.clear_ink()
+
+                }) {
+                    Text("Save")
+                }
+                Button(onClick = {
+                    println("Clear button was clicked")
+                    drawViewModel.clear_ink()
+                }) {
+                    Text("Clear")
                 }
             }
 
-            drawPath(
-                path = path,
-                color = Color.Blue,
-                style = Stroke(width = 5f, cap = StrokeCap.Round, join = StrokeJoin.Round)
-            )
         }
-
-        Row( modifier = modifier.padding(8.dp)) {
-            Button(onClick = {
-                println("Button was clicked")
-                println(inkBuilder.build())
-                drawViewModel.digitalInkModel.recognize_ink(inkBuilder.build())
-
-
-            }) {
-                Text("Save")
-            }
-            Button( onClick = {
-                println("Clear button was clicked")
-                drawViewModel.clear_ink()
-            }) {
-                Text("Clear")
-            }
-        }
-
-
+        ProgressColumn(interventions = interventions)
     }
 }
 

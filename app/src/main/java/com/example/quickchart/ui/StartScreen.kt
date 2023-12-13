@@ -1,16 +1,27 @@
 package com.example.quickchart.ui
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.ZeroCornerSize
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,6 +29,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,6 +49,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.quickchart.R
 import com.example.quickchart.model.InterventionsViewModel
 
 @Composable
@@ -40,7 +59,6 @@ fun QuickChartApp(
 
     val navController = rememberNavController()
     val drawViewModel: DrawSectionViewModel = viewModel()
-//    val interventionViewModel: InterventionsViewModel = viewModel()
 
     drawViewModel.digitalInkModel.download_model()
 
@@ -79,26 +97,22 @@ fun QuickChartApp(
 
 @Composable
 fun StartScreen(navController: NavController, modifier: Modifier = Modifier) {
+
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .padding(4.dp)) {
 
-        Spacer(modifier = Modifier.size(32.dp))
+        Spacer(modifier = Modifier.size(100.dp))
 
-        Text(
-            text = "QuickChart",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = modifier
-        )
+        TitleBanner(modifier = Modifier.fillMaxWidth())
 
         Spacer(modifier = Modifier.size(32.dp))
 
         Text(
-            text = "Enter patient's MRN or scan wristband:",
-            fontSize = 16.sp,
+            text = "Enter Patient's MRN:",
+            style = MaterialTheme.typography.labelLarge,
             modifier = modifier.padding(8.dp)
         )
 
@@ -107,6 +121,22 @@ fun StartScreen(navController: NavController, modifier: Modifier = Modifier) {
         PatientBar(navController)
 
         Spacer(modifier = Modifier.size(24.dp))
+
+        Text(
+            text = "Or Scan Wristband:",
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(8.dp)
+        )
+
+        ScanButton()
+
+        Spacer(modifier = Modifier.size(24.dp))
+
+        Text(
+            text = "Add Information Later:",
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(8.dp)
+        )
 
         SkipButton()
 
@@ -130,18 +160,33 @@ fun PatientBar(navController: NavController, modifier: Modifier = Modifier) {
             value = patientID.value,
             onValueChange = { patientID.value = it},
             singleLine = true,
-            placeholder = { Text("Enter Patient MRN")},
-            modifier = Modifier,
-
+            placeholder = {
+                Text(
+                    text = "ie. TP789209",
+                    fontSize = 28.sp
+                )},
+            modifier = Modifier.padding(8.dp).defaultMinSize(minHeight = 80.dp, minWidth = 400.dp),
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = TextFieldDefaults.textFieldColors(
+                    textColor = Color.Black,
+                    disabledTextColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+            ),
+            textStyle = MaterialTheme.typography.labelMedium
         )
+
         Button(
             onClick = {
                 navController.navigate("chartscreen/${patientID.value.text}") },
-            modifier = Modifier.padding(4.dp)
+            modifier = Modifier.padding(start = 36.dp, top = 4.dp, bottom = 4.dp, end = 8.dp),
+            colors = ButtonDefaults.buttonColors(colorResource(id = R.color.pink))
         ) {
             Text(
-                text ="Enter",
-                fontSize = 16.sp
+                text ="Next",
+                style = MaterialTheme.typography.titleLarge,
+                color = Color.Black
             )
         }
 
@@ -154,15 +199,50 @@ fun SkipButton(modifier: Modifier = Modifier) {
 
     Button(
         onClick = { /*TODO*/ },
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier.padding(start = 36.dp, top = 4.dp, bottom = 4.dp, end = 8.dp),
+        colors = ButtonDefaults.buttonColors(colorResource(id = R.color.pink))
     ) {
         Text(
             text = "Skip",
-            fontSize = 16.sp
+            style = MaterialTheme.typography.titleLarge,
+            color = Color.Black
         )
     }
 
 }
+
+@Composable
+fun ScanButton(modifier: Modifier = Modifier) {
+
+    Button(
+        onClick = { /*TODO*/ },
+        modifier = Modifier.padding(start = 36.dp, top = 4.dp, bottom = 4.dp, end = 8.dp),
+        colors = ButtonDefaults.buttonColors(colorResource(id = R.color.pink))
+    ) {
+        Text(
+            text = "Scan",
+            style = MaterialTheme.typography.titleLarge,
+            color = Color.Black
+        )
+    }
+
+}
+
+@Composable
+fun TitleBanner(modifier: Modifier) {
+
+
+    Image(
+        painter = painterResource(id = R.drawable.codechartlogolarge),
+        contentDescription = "Quick Chart Logo",
+        contentScale = ContentScale.Fit,
+        modifier = Modifier
+            .width(900.dp)
+            .background(colorResource(id = R.color.pink))
+    )
+
+}
+
 
 @Preview(showBackground = true)
 @Composable

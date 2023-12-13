@@ -38,10 +38,8 @@ fun CodeChartScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-//            DrawSection(drawViewModel = drawViewModel, interventionViewModel = interventionViewModel)
-            //ProgressColumn(interventionViewModel = interventionViewModel)
-            DrawSection(drawViewModel = drawViewModel, addIntervention = addIntervention)
-            ProgressColumn(interventions = interventions, addIntervention = addIntervention, interventionState = interventionState)
+            DrawSection(drawViewModel = drawViewModel, addIntervention = addIntervention, interventions = interventions)
+            //ProgressColumn(interventions = interventions, addIntervention = addIntervention, interventionState = interventionState)
         }
 
     }

@@ -109,19 +109,10 @@ class ModelManager {
             .addOnFailureListener { e: Exception ->
                 Log.e(TAG, "Error during recognition: $e")
             }
+//
+//        return true
 
     }
 
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    fun add_recognized_text(recognized_text: String) {
-//        recognitionText = recognized_text
-//        val currentDateTime = LocalDateTime.now()
-//        val formattedDateTime = currentDateTime.format(formatter)
-//
-//        println("Inside add recognized text, the date is " + formattedDateTime + "the text is: " + recognized_text)
-//        val newIntervention = Intervention(formattedDateTime, recognized_text)
-//
-//
-//    }
 
 }

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -28,38 +29,31 @@ import com.example.quickchart.model.Intervention
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgressColumn (
-    modifier: Modifier = Modifier.padding(8.dp),
+    modifier: Modifier = Modifier,
     interventions: List<Intervention>,
-    addIntervention: (String, String) -> Unit,
+    //addIntervention: (String, String) -> Unit,
     //interventionViewModel: InterventionsViewModel,
-    interventionState: InterventionDataSource,
+    //interventionState: InterventionDataSource,
 ) {
 
+    Column( modifier = Modifier ) {
 
-    val intList = remember { mutableStateOf(emptyList<Intervention>()) }
+        Text(
+            modifier = Modifier
+                .size(120.dp),
+            text = "Interventions"
+        )
+
+        val intList = remember { mutableStateOf(emptyList<Intervention>()) }
+
+        val newIntervention = interventions.toList()
+        intList.value = newIntervention
+
+        println("In progress column, interventions is : $interventions and intList.value is ${intList.value}")
 
 
-    println("In progress column, interventions is : $interventions and intList.value is ${intList.value}" )
+        InterventionColumn(interventionsList = intList.value)
 
-
-    InterventionColumn(interventionsList = intList.value)
-
-
-    Column() {
-        Button(onClick = {
-            println("button clicked, interventions is: " + interventions)
-            println("and int list is " + intList.value)
-            val newIntervention = interventions.toList()
-            intList.value = newIntervention
-
-        }) {
-            Text("Update Interventions")
-        }
-        Button(onClick = {
-            addIntervention("2304", "TESTTTT")
-        }) {
-            Text("ADD TEST")
-        }
     }
 
 
@@ -68,7 +62,7 @@ fun ProgressColumn (
 @Composable
 fun InterventionCard(intervention: Intervention) {
     Text(modifier = Modifier.padding(8.dp),
-        text = intervention.Time + intervention.Description)
+        text = intervention.Time + "\n" + intervention.Description)
 }
 
 @Composable
