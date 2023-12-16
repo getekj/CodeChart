@@ -47,6 +47,11 @@ val Typography = Typography(
         fontFamily = Kadwa,
         fontWeight = FontWeight.Bold,
         fontSize = 20.sp
-    ) //end button
+    ), //end button
+    bodySmall = TextStyle(
+        fontFamily = Kadwa,
+        fontWeight = FontWeight.Normal,
+        fontSize = 24.sp
+    ) //interventions text
 
 )
