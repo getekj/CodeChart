@@ -25,7 +25,7 @@ The following features are in progress:
 
 Here's a walkthrough of implemented features:
 
-<img src='walkthrough.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='git_codechart.webm' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 <!-- Replace this with whatever GIF tool you used! -->
 <!-- Recommended tools:
