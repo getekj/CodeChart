@@ -25,7 +25,7 @@ The following features are in progress:
 
 Here's a walkthrough of implemented features:
 
-<img src='codechart.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='codechart-smaller.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 <!-- Replace this with whatever GIF tool you used! -->
 <!-- Recommended tools:
